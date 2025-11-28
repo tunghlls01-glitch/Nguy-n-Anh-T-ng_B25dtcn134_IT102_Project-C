@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 struct Account {
     char accountId[20];
@@ -51,39 +52,86 @@ int isLetterString(const char *str){
 
 void f01_addAccount(struct Account accounts[], int *size) {
     int addCount;
-    printf("Nhap so luong tai khoan: ");
-    if (scanf("%d", &addCount) != 1) {
-        clear_stdin_line();
-        printf("Nhap khong hop le!\n");
-        return;
-    }
-    clear_stdin_line();
+    char input[50];
 
-    if(addCount <= 0 || addCount > 100){
-        printf("So luong khong hop le! (1..100)\n");
-        return;
+    // ===== NHAP SO LUONG TAI KHOAN =====
+    while (1) {
+        printf("Nhap so luong tai khoan: ");
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            printf("Loi khi nhap! Hay thu lai.\n");
+            continue;
+        }
+
+        input[strcspn(input, "\n")] = '\0';
+
+        if (strlen(input) == 0) {
+            printf("Khong duoc de trong! Hay nhap lai.\n");
+            continue;
+        }
+
+        int hasNonSpace = 0;
+        for (int i = 0; input[i]; i++) {
+            if (!isspace((unsigned char)input[i])) {
+                hasNonSpace = 1;
+                break;
+            }
+        }
+        if (!hasNonSpace) {
+            printf("Khong duoc chi nhap khoang trang! Hay nhap lai.\n");
+            continue;
+        }
+
+        int isNumber = 1;
+        for (int i = 0; input[i]; i++) {
+            if (!isdigit((unsigned char)input[i])) {
+                isNumber = 0;
+                break;
+            }
+        }
+        if (!isNumber) {
+            printf("Chi duoc nhap so! Hay nhap lai.\n");
+            continue;
+        }
+
+        addCount = atoi(input);
+        if (addCount <= 0 || addCount > 100) {
+            printf("So luong khong hop le! (1..100)\n");
+            continue;
+        }
+        if (*size + addCount > 100) {
+            printf("Khong du suc chua de them %d tai khoan. Con lai: %d\n", addCount, 100 - *size);
+            continue;
+        }
+
+        break; // hop le
     }
 
-    if (*size + addCount > 100) {
-        printf("Khong du suc chua de them %d tai khoan. Con lai: %d\n", addCount, 100 - *size);
-        return;
-    }
-
-    for(int k = 0; k < addCount; k++){
+    // ===== THEM TAI KHOAN =====
+    for (int k = 0; k < addCount; k++) {
         int idx = *size + k;
         printf("----------Tai khoan nguoi dung %d ----------\n", idx + 1);
 
+        // ===== NHAP ID =====
         while (1) {
             char tmpId[sizeof(accounts[idx].accountId)];
-
             printf("Nhap ID (ma tai khoan): ");
-            if (fgets(tmpId, sizeof(tmpId), stdin) == NULL) {
-                tmpId[0] = '\0';
-            }
+            if (fgets(tmpId, sizeof(tmpId), stdin) == NULL) tmpId[0] = '\0';
             tmpId[strcspn(tmpId, "\n")] = '\0';
 
             if (strlen(tmpId) == 0) {
                 printf("ID khong duoc de trong! Vui long nhap lai.\n");
+                continue;
+            }
+
+            int hasNonSpace = 0;
+            for (int i = 0; tmpId[i]; i++) {
+                if (!isspace((unsigned char)tmpId[i])) {
+                    hasNonSpace = 1;
+                    break;
+                }
+            }
+            if (!hasNonSpace) {
+                printf("ID khong duoc chi co khoang trang! Hay nhap lai.\n");
                 continue;
             }
 
@@ -95,12 +143,12 @@ void f01_addAccount(struct Account accounts[], int *size) {
                 }
             }
             if (hasInvalidChar) {
-                printf("ID khong duoc chua ky tu dac biet. Chi duoc chu va so.\n");
+                printf("ID chi duoc chua chu va so! Khong duoc chua ky tu dac biet.\n");
                 continue;
             }
 
-            int totalUsed = *size + k;
             int isDuplicate = 0;
+            int totalUsed = *size + k;
             for (int j = 0; j < totalUsed; j++) {
                 if (strcmp(tmpId, accounts[j].accountId) == 0) {
                     isDuplicate = 1;
@@ -108,7 +156,7 @@ void f01_addAccount(struct Account accounts[], int *size) {
                 }
             }
             if (isDuplicate) {
-                printf(">> Loi: ID nay da ton tai! Vui long chon ID khac.\n");
+                printf(">> Loi: ID nay da ton tai! Hay nhap ID khac.\n");
                 continue;
             }
 
@@ -117,34 +165,59 @@ void f01_addAccount(struct Account accounts[], int *size) {
             break;
         }
 
-        while(1){
-    		printf("Nhap ten (FullName): ");
-    		if (fgets(accounts[idx].fullName, sizeof(accounts[idx].fullName), stdin) == NULL)
-        		accounts[idx].fullName[0] = '\0';
-	
-    			accounts[idx].fullName[strcspn(accounts[idx].fullName, "\n")] = '\0';
+        // ===== NHAP TEN =====
+        while (1) {
+            printf("Nhap ten (FullName): ");
+            if (fgets(accounts[idx].fullName, sizeof(accounts[idx].fullName), stdin) == NULL)
+                accounts[idx].fullName[0] = '\0';
+            accounts[idx].fullName[strcspn(accounts[idx].fullName, "\n")] = '\0';
 
-    		if(strlen(accounts[idx].fullName) == 0){
-        		printf("Ten khong duoc de trong!\n");
-        		continue;
-    		}
+            if (strlen(accounts[idx].fullName) == 0) {
+                printf("Ten khong duoc de trong!\n");
+                continue;
+            }
 
-   			if(!isLetterString(accounts[idx].fullName)){
-        		printf("Ten chi duoc phep chua chu cai va khoang trang!\n");
-        		continue;
-    		}
+            int hasLetter = 0;
+            for (int i = 0; accounts[idx].fullName[i]; i++) {
+                if (isalpha((unsigned char)accounts[idx].fullName[i])) {
+                    hasLetter = 1;
+                    break;
+                }
+            }
+            if (!hasLetter) {
+                printf("Ten khong duoc chi co khoang trang! Hay nhap lai.\n");
+                continue;
+            }
 
-    		break; //hop le
-		}
+            if (!isLetterString(accounts[idx].fullName)) {
+                printf("Ten chi duoc chua chu cai va khoang trang!\n");
+                continue;
+            }
 
-        while(1){
+            break;
+        }
+
+        // ===== NHAP SO DIEN THOAI =====
+        while (1) {
             printf("Nhap so dien thoai (phone): ");
             if (fgets(accounts[idx].phone, sizeof(accounts[idx].phone), stdin) == NULL)
                 accounts[idx].phone[0] = '\0';
             accounts[idx].phone[strcspn(accounts[idx].phone, "\n")] = '\0';
 
-            if(strlen(accounts[idx].phone)  == 0){
-                printf("So dien thoai khong duoc de trong! \n");
+            if (strlen(accounts[idx].phone) == 0) {
+                printf("So dien thoai khong duoc de trong!\n");
+                continue;
+            }
+
+            int hasNonSpacePhone = 0;
+            for (int i = 0; accounts[idx].phone[i]; i++) {
+                if (!isspace((unsigned char)accounts[idx].phone[i])) {
+                    hasNonSpacePhone = 1;
+                    break;
+                }
+            }
+            if (!hasNonSpacePhone) {
+                printf("So dien thoai khong duoc chi co khoang trang!\n");
                 continue;
             }
 
@@ -156,7 +229,7 @@ void f01_addAccount(struct Account accounts[], int *size) {
                 }
             }
             if (hasNonDigit) {
-                printf("So dien thoai chi duoc chua chu so! Vui long nhap lai.\n");
+                printf("So dien thoai chi duoc chua chu so!\n");
                 continue;
             }
 
@@ -176,7 +249,7 @@ void f01_addAccount(struct Account accounts[], int *size) {
             break;
         }
 
-        accounts[idx].balance = 0.0;
+        accounts[idx].balance = 100000.0;
         accounts[idx].status = 1;
     }
 
@@ -193,7 +266,7 @@ void f02_updateAccount(struct Account accounts[], int size) {
     char id[sizeof(accounts[0].accountId)];
     int found = -1;
 
-    /* ===== Vong lap nhap id cho den khi dung ===== */
+    // ===== Nhap ID =====
     while (1) {
         printf("Nhap ID tai khoan can cap nhat (Enter de huy): ");
         if (fgets(id, sizeof(id), stdin) == NULL) {
@@ -207,7 +280,6 @@ void f02_updateAccount(struct Account accounts[], int size) {
             return;
         }
 
-        /* Tim tai khoan */
         found = -1;
         for (int i = 0; i < size; i++) {
             if (strcmp(accounts[i].accountId, id) == 0) {
@@ -219,55 +291,91 @@ void f02_updateAccount(struct Account accounts[], int size) {
         if (found == -1) {
             printf("Khong tim thay ID '%s'. Vui long nhap lai!\n\n", id);
         } else {
-            break;  // tim thay -> tiep tuc cap nhat
+            break;
         }
     }
 
-    /* ===== Bat dau cap nhat ===== */
     printf("=== Cap nhat thong tin tai khoan %s ===\n", id);
 
     char temp[256];
 
-    /* --- Cap nhat ten --- */
-    printf("Ten hien tai: %s\n", accounts[found].fullName);
-    printf("Nhap ten moi (Enter de giu nguyen): ");
-    if (fgets(temp, sizeof(temp), stdin)) {
-        temp[strcspn(temp, "\n")] = '\0';
-        if (strlen(temp) > 0) {
-            strncpy(accounts[found].fullName, temp, sizeof(accounts[found].fullName) - 1);
-            accounts[found].fullName[sizeof(accounts[found].fullName) - 1] = '\0';
+    // ===== Cap nhat Ten =====
+    while (1) {
+        printf("Ten hien tai: %s\n", accounts[found].fullName);
+        printf("Nhap ten moi (Enter de giu nguyen): ");
+        if (fgets(temp, sizeof(temp), stdin) == NULL) {
+            printf("Loi nhap ten.\n");
+            return;
         }
+        temp[strcspn(temp, "\n")] = '\0';
+
+        // Neu nhap rong hoac chi khoang trang -> giu nguyen
+        int hasNonSpace = 0;
+        for (int i = 0; temp[i]; i++) {
+            if (!isspace((unsigned char)temp[i])) {
+                hasNonSpace = 1;
+                break;
+            }
+        }
+        if (!hasNonSpace) {
+            break; // giu nguyen
+        }
+
+        // Kiem tra chi chu cai va khoang trang
+        int valid = 1;
+        for (int i = 0; temp[i]; i++) {
+            if (!isalpha((unsigned char)temp[i]) && !isspace((unsigned char)temp[i])) {
+                valid = 0;
+                break;
+            }
+        }
+        if (!valid) {
+            printf("Ten chi duoc chua chu cai va khoang trang! Nhap lai.\n");
+            continue;
+        }
+
+        // Hop le -> luu
+        strncpy(accounts[found].fullName, temp, sizeof(accounts[found].fullName) - 1);
+        accounts[found].fullName[sizeof(accounts[found].fullName) - 1] = '\0';
+        break;
     }
 
-    /* --- Cap nhat SDT --- */
+    // ===== Cap nhat SDT =====
     while (1) {
         printf("SDT hien tai: %s\n", accounts[found].phone);
         printf("Nhap SDT moi (Enter de giu nguyen): ");
-
         if (fgets(temp, sizeof(temp), stdin) == NULL) {
             printf("Loi nhap SDT.\n");
             return;
         }
         temp[strcspn(temp, "\n")] = '\0';
 
-        if (strlen(temp) == 0) {
-            break; // giu nguyen
-        }
-
-        // kiem tra toan so
-        int ok = 1;
-        for (int i = 0; i < strlen(temp); i++) {
-            if (!isdigit((unsigned char)temp[i])) {
-                ok = 0;
+        // Neu nhap rong hoac chi khoang trang -> giu nguyen
+        int hasNonSpace = 0;
+        for (int i = 0; temp[i]; i++) {
+            if (!isspace((unsigned char)temp[i])) {
+                hasNonSpace = 1;
                 break;
             }
         }
-        if (!ok) {
-            printf(" SDT chi duoc chua chu so! Nhap lai.\n");
+        if (!hasNonSpace) {
+            break; // giu nguyen
+        }
+
+        // Chi duoc chua so
+        int valid = 1;
+        for (int i = 0; temp[i]; i++) {
+            if (!isdigit((unsigned char)temp[i])) {
+                valid = 0;
+                break;
+            }
+        }
+        if (!valid) {
+            printf("SDT chi duoc chua chu so! Nhap lai.\n");
             continue;
         }
 
-        // kiem tra trung
+        // Kiem tra trung
         int dup = 0;
         for (int i = 0; i < size; i++) {
             if (i != found && strcmp(accounts[i].phone, temp) == 0) {
@@ -280,7 +388,7 @@ void f02_updateAccount(struct Account accounts[], int size) {
             continue;
         }
 
-        // OK -> luu
+        // Hop le -> luu
         strncpy(accounts[found].phone, temp, sizeof(accounts[found].phone) - 1);
         accounts[found].phone[sizeof(accounts[found].phone) - 1] = '\0';
         break;
@@ -306,7 +414,7 @@ void f03_lockOrUnlock(struct Account accounts[], int size) {
     char id[sizeof(accounts[0].accountId)];
     int found = -1;
 
-    // Vong lap nhap ID: không duoc rong, khong tim thay nhap lai
+    // Vong lap nhap ID: khÃ´ng duoc rong, khong tim thay nhap lai
     while (1) {
         printf("Nhap ID tai khoan can khoa/mo: ");
         if (fgets(id, sizeof(id), stdin) == NULL) {
@@ -367,7 +475,7 @@ void f03_deleteAccount(struct Account accounts[], int *size) {
     char id[sizeof(accounts[0].accountId)];
     int found = -1;
 
-    // Vong lap nhap ID: không duoc rong, khong tim thay nhap lai
+    // Vong lap nhap ID: khÃ´ng duoc rong, khong tim thay nhap lai
     while (1) {
         printf("Nhap ID tai khoan can xoa: ");
         if (fgets(id, sizeof(id), stdin) == NULL) {
@@ -450,7 +558,7 @@ void f04_searchAccount(struct Account accounts[], int size) {
         return;
     }
 
-    /* t?o phiên b?n thu?ng hóa c?a t? khóa */
+    /* t?o phiÃªn b?n thu?ng hÃ³a c?a t? khÃ³a */
     char keyLower[sizeof(keyword)];
     size_t i;
     for (i = 0; i < sizeof(keyLower) - 1 && keyword[i] != '\0'; ++i) {
@@ -461,16 +569,16 @@ void f04_searchAccount(struct Account accounts[], int size) {
     int found = 0;
     int printedIndex = 0;
 
-    /* duy?t t?ng account, n?u kh?p thì in (và in header m?t l?n) */
+    /* duy?t t?ng account, n?u kh?p thÃ¬ in (vÃ  in header m?t l?n) */
     for (int idx = 0; idx < size; ++idx) {
-        /* chu?n b? b?n thu?ng hóa cho ID */
+        /* chu?n b? b?n thu?ng hÃ³a cho ID */
         char idLower[sizeof(accounts[idx].accountId)];
         for (i = 0; i < sizeof(idLower) - 1 && accounts[idx].accountId[i] != '\0'; ++i) {
             idLower[i] = (char)tolower((unsigned char)accounts[idx].accountId[i]);
         }
         idLower[i] = '\0';
 
-        /* chu?n b? b?n thu?ng hóa cho fullName */
+        /* chu?n b? b?n thu?ng hÃ³a cho fullName */
         char nameLower[sizeof(accounts[idx].fullName)];
         for (i = 0; i < sizeof(nameLower) - 1 && accounts[idx].fullName[i] != '\0'; ++i) {
             nameLower[i] = (char)tolower((unsigned char)accounts[idx].fullName[i]);
@@ -487,7 +595,7 @@ void f04_searchAccount(struct Account accounts[], int size) {
                 printf("----------------------------------------------------------------------------------------------\n");
             }
 
-            /* in tài kho?n kh?p */
+            /* in tÃ i kho?n kh?p */
             ++printedIndex;
             printf("| %-3d | %-15s | %-25s | %-12s | %-10.2f | %-10s |\n",
                    printedIndex,
@@ -508,102 +616,140 @@ void f04_searchAccount(struct Account accounts[], int size) {
     }
 }
 
+void trim(char *str) {
+// XÃ³a kho?ng tr?ng d?u
+int start = 0;
+while (isspace((unsigned char)str[start])) start++;
+if (start > 0) memmove(str, str + start, strlen(str + start) + 1);
+
+// XÃ³a kho?ng tr?ng cu?i
+int end = strlen(str) - 1;
+while (end >= 0 && isspace((unsigned char)str[end])) {
+    str[end] = '\0';
+    end--;
+}
+
+}
+
 void f05_listAccounts(struct Account accounts[], int size) {
-    if (size == 0) {
-        printf("Chua co tai khoan nao trong he thong!\n");
-        return;
+if (size == 0) {
+printf("Chua co tai khoan nao trong he thong!\n");
+return;
+}
+
+int pageSize;
+char temp[20];
+long tempLong;
+char *endptr;
+
+// ===============================
+// Nh?p pageSize + validation
+// ===============================
+while (1) {
+    printf("Nhap so luong phan tu tren moi trang (page_size > 0): ");
+
+    if (fgets(temp, sizeof(temp), stdin) == NULL) continue;
+    temp[strcspn(temp, "\n")] = '\0';
+
+    if (strlen(temp) == 0) {
+        printf("Khong duoc de trong!\n");
+        continue;
     }
 
-    int pageSize;
-    char temp[20];
-
-    // ===============================
-    // NH?P pageSize + validation
-    // ===============================
-    while (1) {
-        printf("Nhap so luong phan tu hien thi tren moi trang (page_size > 0): ");
-
-        if (fgets(temp, sizeof(temp), stdin) == NULL) continue;
-        temp[strcspn(temp, "\n")] = '\0';
-
-        pageSize = atoi(temp);
-
-        if (pageSize > 0) break;
-        printf("Gia tri khong hop le! page_size phai > 0.\n");
+    tempLong = strtol(temp, &endptr, 10);
+    if (*endptr != '\0') {
+        printf("Gia tri khong hop le! Vui long nhap so.\n");
+        continue;
     }
 
-    int totalPages = (size + pageSize - 1) / pageSize;
-    int currentPage = 0;
-    char input[20];
+    if (tempLong <= 0) {
+        printf("page_size phai > 0!\n");
+        continue;
+    }
 
+    pageSize = (int)tempLong;
+    break;
+}
+
+int totalPages = (size + pageSize - 1) / pageSize;
+int currentPage = 0;
+char input[20];
+
+// ===============================
+// VÃ²ng l?p phÃ¢n trang
+// ===============================
+while (1) {
+    int start = currentPage * pageSize;
+    int end = start + pageSize;
+    if (end > size) end = size;
+
+    printf("\n--- Danh sach tai khoan (Trang %d/%d) ---\n", currentPage + 1, totalPages);
+    printf("----------------------------------------------------------------------------------------------\n");
+    printf("| %-3s | %-15s | %-25s | %-12s | %-10s | %-10s |\n",
+           "STT", "ID", "Ho ten", "Phone", "So du", "Trang thai");
+    printf("----------------------------------------------------------------------------------------------\n");
+
+    for (int i = start; i < end; i++) {
+        trim(accounts[i].fullName);  // Lo?i b? kho?ng tr?ng tru?c khi hi?n th?
+        printf("| %-3d | %-15s | %-25s | %-12s | %-10.2f | %-10s |\n",
+               i + 1,
+               accounts[i].accountId,
+               accounts[i].fullName,
+               accounts[i].phone,
+               accounts[i].balance,
+               accounts[i].status == 1 ? "Hoat dong" : "Khoa");
+    }
+    printf("----------------------------------------------------------------------------------------------\n");
+
+    // ===============================
+    // Nh?p di?u hu?ng trang
+    // ===============================
     while (1) {
-        int start = currentPage * pageSize;
-        int end = start + pageSize;
-        if (end > size) end = size;
-
-        printf("\n--- Danh sach tai khoan (Trang %d/%d) ---\n", currentPage + 1, totalPages);
+        printf("||     'n' trang sau   ||   'p' trang truoc   ||   'q' thoat   ||   So trang de nhay den     ||\n");
         printf("----------------------------------------------------------------------------------------------\n");
-        printf("| %-3s | %-15s | %-25s | %-12s | %-10s | %-10s |\n",
-               "STT", "ID", "Ho ten", "Phone", "So du", "Trang thai");
-        printf("----------------------------------------------------------------------------------------------\n");
+        printf("Nhap lua chon: ");
 
-        for (int i = start; i < end; i++) {
-            printf("| %-3d | %-15s | %-25s | %-12s | %-10.2f | %-10s |\n",
-                   i + 1,
-                   accounts[i].accountId,
-                   accounts[i].fullName,
-                   accounts[i].phone,
-                   accounts[i].balance,
-                   accounts[i].status == 1 ? "Hoat dong" : "Khoa");
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            printf("Loi khi doc du lieu. Huy.\n");
+            return;
         }
-        printf("----------------------------------------------------------------------------------------------\n");
+        input[strcspn(input, "\n")] = '\0';
 
-        while (1) {
-            printf("|| 'n' trang sau || 'p' trang truoc || 'q' thoat || So trang de nhay den ||\n");
-            printf("Nhap lua chon: ");
-
-            if (fgets(input, sizeof(input), stdin) == NULL) {
-                printf("Loi khi doc du lieu. Huy.\n");
-                return;
-            }
-            input[strcspn(input, "\n")] = '\0';
-
-            // ----- CH?N L?NH n/p/q -----
-            if (strlen(input) == 1) {
-                char c = input[0];
-
-                if (c == 'n' || c == 'N') {
-                    if (currentPage + 1 < totalPages) currentPage++;
-                    else printf("Ban dang o trang cuoi!\n");
-                    break;
-                }
-                else if (c == 'p' || c == 'P') {
-                    if (currentPage > 0) currentPage--;
-                    else printf("Ban dang o trang dau!\n");
-                    break;
-                }
-                else if (c == 'q' || c == 'Q') {
-                    return;
-                }
-            }
-
-            // ----- NH?P S? TRANG -----
-            int pageNum = atoi(input);
-
-            if (pageNum > 0 && pageNum <= totalPages) {
-                currentPage = pageNum - 1;
+        // X? lÃ½ l?nh n/p/q
+        if (strlen(input) == 1) {
+            char c = input[0];
+            if (c == 'n' || c == 'N') {
+                if (currentPage + 1 < totalPages) currentPage++;
+                else printf("Ban dang o trang cuoi!\n");
                 break;
             }
-
-            // pageNum <= 0 ? KHÔNG H?P L?
-            if (pageNum <= 0) {
-                printf("So trang phai > 0!\n");
-                continue;
+            else if (c == 'p' || c == 'P') {
+                if (currentPage > 0) currentPage--;
+                else printf("Ban dang o trang dau!\n");
+                break;
             }
-
-            printf("Nhap khong hop le! Vui long thu lai.\n");
+            else if (c == 'q' || c == 'Q') {
+                return;
+            }
         }
+
+        // X? lÃ½ nh?p s? trang
+        char *endptrPage;
+        long pageLong = strtol(input, &endptrPage, 10);
+        if (*endptrPage != '\0') {
+            printf("Nhap khong hop le! Vui long nhap so trang.\n");
+            continue;
+        }
+        if (pageLong <= 0 || pageLong > totalPages) {
+            printf("Trang khong ton tai!\n");
+            continue;
+        }
+
+        currentPage = (int)pageLong - 1;
+        break;
     }
+}
+
 }
 
 void f06_sortAccounts(struct Account accounts[], int size) {
@@ -612,60 +758,149 @@ void f06_sortAccounts(struct Account accounts[], int size) {
         return;
     }
 
-    // Bubble Sort
+    char input[20];
+    long choice;
+    char *endptr;
+
+    // ============================
+    // Menu lua chon
+    // ============================
+    while (1) {
+        printf("\n||======= SAP XEP TAI KHOAN =======||\n");
+        printf("||[1] Sap xep theo SO DU (Giam dan)||\n");
+        printf("||=================================||\n");
+        printf("||[2] Sap xep theo TEN (A -> Z)    ||\n");
+        printf("||=================================||\n");
+        printf("Chon (1-2): ");
+
+        if (fgets(input, sizeof(input), stdin) == NULL) continue;
+        input[strcspn(input, "\n")] = '\0';
+
+        choice = strtol(input, &endptr, 10);
+
+        if (*endptr == '\0' && (choice == 1 || choice == 2)) break;
+
+        printf("Lua chon khong hop le! Vui long nhap 1 hoac 2.\n");
+    }
+
+    // ============================
+    // S?p x?p
+    // ============================
     for (int i = 0; i < size - 1; i++) {
         for (int j = 0; j < size - i - 1; j++) {
 
-            // So sánh h? tên (không phân bi?t hoa thu?ng)
-            if (strcasecmp(accounts[j].fullName, accounts[j + 1].fullName) > 0) {
+            int swap = 0;
+
+            if (choice == 1) {
+                // ============================
+                // (1) So du giam dan
+                // ============================
+                if (accounts[j].balance < accounts[j + 1].balance) {
+                    swap = 1;
+                }
+            } 
+            else if (choice == 2) {
+                // ============================
+                // (2) TÃªn A - Z
+                // ============================
+                int cmp = strcasecmp(accounts[j].fullName, accounts[j + 1].fullName);
+
+                if (cmp > 0) swap = 1;
+                else if (cmp == 0) {
+                    // N?u tÃªn b?ng nhau ? s?p theo accountId
+                    if (strcasecmp(accounts[j].accountId, accounts[j + 1].accountId) > 0)
+                        swap = 1;
+                }
+            }
+
+            if (swap) {
                 struct Account tmp = accounts[j];
                 accounts[j] = accounts[j + 1];
                 accounts[j + 1] = tmp;
             }
-            else if (strcasecmp(accounts[j].fullName, accounts[j + 1].fullName) == 0) {
-                // N?u tên trùng ? s?p theo accountId
-                if (strcasecmp(accounts[j].accountId, accounts[j + 1].accountId) > 0) {
-                    struct Account tmp = accounts[j];
-                    accounts[j] = accounts[j + 1];
-                    accounts[j + 1] = tmp;
-                }
-            }
         }
     }
 
-    printf("Sap xep thanh cong (A ? Z)!\n");
+    if (choice == 1)
+        printf("Da sap xep theo SO DU (Giam dan)!\n");
+    else
+        printf("Da sap xep theo TEN (A -> Z)!\n");
 }
 
-int main(){
+int main() {
     struct Account accounts[100];
     int choice, size = 0;
-    while(1){
-        displayMenu ();
-        printf("Moi ban nhap lua chon: ");
-        if (scanf("%d", &choice) != 1) {
-            clear_stdin_line();
-            printf("Lua chon khong hop le.\n");
-            continue;
-        }
-        clear_stdin_line();
+    char input[50];
 
-        switch (choice){
-            case 1:{
+    while (1) {
+
+        // =============================
+        // NHAP LUA CHON MENU
+        // =============================
+        while (1) {
+            displayMenu();
+            printf("Moi ban nhap lua chon: ");
+
+            if (fgets(input, sizeof(input), stdin) == NULL) {
+                printf("Loi khi nhap! Hay thu lai.\n");
+                continue;
+            }
+
+            input[strcspn(input, "\n")] = '\0';
+
+            if (strlen(input) == 0) {
+                printf("Khong duoc de trong! Hay nhap lai.\n");
+                continue;
+            }
+
+            int hasNonSpace = 0;
+            for (int i = 0; input[i]; i++) {
+                if (!isspace((unsigned char)input[i])) {
+                    hasNonSpace = 1;
+                    break;
+                }
+            }
+            if (!hasNonSpace) {
+                printf("Khong duoc chi nhap khoang trang!\n");
+                continue;
+            }
+
+            int isNumber = 1;
+            for (int i = 0; input[i]; i++) {
+                if (!isdigit((unsigned char)input[i])) {
+                    isNumber = 0;
+                    break;
+                }
+            }
+            if (!isNumber) {
+                printf("Lua chon chi duoc chua chu so!\n");
+                continue;
+            }
+
+            choice = atoi(input);
+            break;  // NHAP LUA CHON HOP LE -> THOAT VONG NHAP
+        }
+
+        // =============================
+        // XU LY LUA CHON
+        // =============================
+        switch (choice) {
+
+            case 1:
                 f01_addAccount(accounts, &size);
                 break;
-            }
 
-            case 2:{
+            case 2:
                 f02_updateAccount(accounts, size);
                 break;
-            }
 
-            case 3:{
+            case 3: {
                 char choice_01;
 
-                while(1){
+                while (1) {
                     menu_f03();
                     printf("Moi ban nhap lua chon (a/b) (hoac q de thoat): ");
+
                     if (scanf(" %c", &choice_01) != 1) {
                         clear_stdin_line();
                         printf("Lua chon khong hop le.\n");
@@ -673,16 +908,16 @@ int main(){
                     }
                     clear_stdin_line();
 
-                    if(choice_01 == 'a' || choice_01 == 'A'){
+                    if (choice_01 == 'a' || choice_01 == 'A') {
                         f03_lockOrUnlock(accounts, size);
                         break;
                     }
-                    else if(choice_01 == 'b' || choice_01 == 'B'){
+                    else if (choice_01 == 'b' || choice_01 == 'B') {
                         f03_deleteAccount(accounts, &size);
                         break;
                     }
-                    else if(choice_01 == 'q' || choice_01 == 'Q'){
-                        break; // thoat menu 3 -> ve menu chinh
+                    else if (choice_01 == 'q' || choice_01 == 'Q') {
+                        break;  // THOAT MENU 3 -> VE MENU CHINH
                     }
                     else {
                         printf("Lua chon khong hop le! Hay nhap a/b (hoac q de thoat).\n");
@@ -690,33 +925,32 @@ int main(){
                 }
                 break;
             }
-            
-            case 4:{
-            	f04_searchAccount(accounts, size);
-				break;
-			}
-			
-			case 5:{
-				f05_listAccounts(accounts, size);
-				break;
-			}
-			
-			case 6: {
-				f06_sortAccounts(accounts, size);
-				break;
-			}
-			 
-            case 9:{
+
+            case 4:
+                f04_searchAccount(accounts, size);
+                break;
+
+            case 5:
+                f05_listAccounts(accounts, size);
+                break;
+
+            case 6:
+                f06_sortAccounts(accounts, size);
+                break;
+                
+            case 7: 
+				
+				break;	
+            case 9:
                 printf("Thoat chuong trinh.\n");
                 return 0;
-            }
 
-            default:{
-                printf("Khong ton tai chuc nang nay! \n");
+            default:
+                printf("Khong ton tai chuc nang nay!\n");
                 break;
-            }
         }
-    }
+
+    } 
 
     return 0;
 }
