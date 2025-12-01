@@ -2,7 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <time.h>   /* <-- Thêm d? l?y th?i gian cho giao d?ch */
+#include <time.h>   
 
 struct Account {
     char accountId[20];
@@ -40,18 +40,12 @@ void clear_stdin_line(void) {
     while ((c = getchar()) != '\n' && c != EOF) { }
 }
 
-/* =========================
-   Hàm ti?n ích dã tách ra
-   ========================= */
-
-/* Ð?c m?t dòng vào buffer (fgets + strip newline). Tr? v? 1 khi thành công, 0 khi EOF */
 int read_line(char *buffer, size_t size) {
     if (fgets(buffer, (int)size, stdin) == NULL) return 0;
     buffer[strcspn(buffer, "\n")] = '\0';
     return 1;
 }
 
-/* Ki?m tra chu?i ch? ch?a kho?ng tr?ng hay r?ng -> tr? v? 1 n?u có ch? kho?ng tr?ng (không h?p l?) */
 int is_only_spaces(const char *s) {
     for (int i = 0; s[i]; i++) {
         if (!isspace((unsigned char)s[i])) return 0;
@@ -59,7 +53,6 @@ int is_only_spaces(const char *s) {
     return 1;
 }
 
-/* Ki?m tra chu?i ch? g?m ch? cái và kho?ng tr?ng */
 int isLetterString(const char *str){
     for(int i = 0; str[i] != '\0'; i++){
         if(!( (str[i] >= 'A' && str[i] <= 'Z') ||
@@ -71,7 +64,6 @@ int isLetterString(const char *str){
     return 1; // h?p l?
 }
 
-/* Trim in-place (xóa kho?ng tr?ng d?u và cu?i) */
 void trim(char *str) {
     int start = 0;
     while (isspace((unsigned char)str[start])) start++;
@@ -84,7 +76,6 @@ void trim(char *str) {
     }
 }
 
-/* Sao chép chu?i src sang dst v?i chuy?n sang ch? thu?ng; dstSize là kích thu?c buffer dích */
 void to_lower_copy(const char *src, char *dst, size_t dstSize) {
     size_t i;
     for (i = 0; i < dstSize - 1 && src[i] != '\0'; ++i) {
@@ -93,7 +84,6 @@ void to_lower_copy(const char *src, char *dst, size_t dstSize) {
     dst[i] = '\0';
 }
 
-/* Ð?c 1 chu?i không du?c r?ng (không nh?n Enter tr?ng ho?c ch? kho?ng tr?ng) */
 int read_nonempty_string(const char *prompt, char *out, size_t outSize) {
     while (1) {
         printf("%s", prompt);
@@ -110,7 +100,6 @@ int read_nonempty_string(const char *prompt, char *out, size_t outSize) {
     }
 }
 
-/* Ð?c s? nguyên duong v?i gi?i h?n minVal..maxVal */
 int read_positive_int(const char *prompt, int *out, int minVal, int maxVal) {
     char temp[64];
     char *endptr;
@@ -154,7 +143,6 @@ int read_positive_int(const char *prompt, int *out, int minVal, int maxVal) {
     }
 }
 
-/* Ð?c và validate ID (không r?ng, ch? alnum, không trùng theo accountsUsed) */
 int read_valid_id(const char *prompt, char *out, size_t outSize, struct Account accounts[], int accountsUsed) {
     char tmp[64];
     while (1) {
@@ -198,7 +186,6 @@ int read_valid_id(const char *prompt, char *out, size_t outSize, struct Account 
     }
 }
 
-/* Ð?c và validate fullName */
 int read_valid_fullname(const char *prompt, char *out, size_t outSize) {
     while (1) {
         printf("%s", prompt);
@@ -226,7 +213,6 @@ int read_valid_fullname(const char *prompt, char *out, size_t outSize) {
     }
 }
 
-/* Ð?c và validate phone */
 int read_valid_phone(const char *prompt, char *out, size_t outSize, struct Account accounts[], int accountsUsed) {
     char tmp[64];
     while (1) {
@@ -268,8 +254,6 @@ int read_valid_phone(const char *prompt, char *out, size_t outSize, struct Accou
     }
 }
 
-/* Ð?c ID d? UPDATE / LOCK / DELETE: yêu c?u không du?c r?ng, n?u không tìm th?y -> nh?p l?i.
-   Tr? v? index tìm th?y, -1 n?u EOF */
 int read_existing_id_index(const char *prompt, struct Account accounts[], int size) {
     char id[64];
     while (1) {
@@ -294,7 +278,6 @@ int read_existing_id_index(const char *prompt, struct Account accounts[], int si
     }
 }
 
-/* Ð?c ID khi c?p nh?t (cho phép Enter d? h?y): tr? v? -2 n?u h?y, -1 n?u error, >=0 là index tìm th?y */
 int read_existing_id_index_allow_cancel(const char *prompt, struct Account accounts[], int size) {
     char id[64];
     while (1) {
@@ -319,23 +302,17 @@ int read_existing_id_index_allow_cancel(const char *prompt, struct Account accou
     }
 }
 
-/* Ð?c chu?i d? update: n?u Enter ho?c r?ng -> caller gi? nguyên */
 int read_update_field(char *out, size_t outSize) {
     if (!read_line(out, outSize)) return 0;
     return 1;
 }
 
-/* Ð?c l?a ch?n confirm y/N */
 int read_confirm_yes(void) {
     char confirm[8];
     if (!read_line(confirm, sizeof(confirm))) { printf("Loi khi doc lua chon. Huy.\n"); return -1; }
     if (confirm[0] == 'y' || confirm[0] == 'Y') return 1;
     return 0;
 }
-
-/* =========================
-   Các hàm chính (s? d?ng helper)
-   ========================= */
 
 void f01_addAccount(struct Account accounts[], int *size) {
     int addCount;
@@ -1430,3 +1407,4 @@ int main() {
 
     return 0;
 }
+
