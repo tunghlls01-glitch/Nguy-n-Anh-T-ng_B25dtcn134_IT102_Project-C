@@ -24,33 +24,36 @@ struct Transaction {
     char date[20];
 };
 
+/* -------------------- Helpers (Ðã S?a L?i Logic) -------------------- */
+
 int read_line(char *buf, size_t n) {
     if (!fgets(buf, (int)n, stdin)){
-		return 0;    	
-	}
+        return 0;    	
+    }
     buf[strcspn(buf, "\n")] = '\0';
     return 1;
 }
 
 int is_only_spaces(const char *s) {
-    for (int i = 0; s[i]; i++){
-    		if (!isspace((unsigned char)s[i])) {
-		return 0;
-	}
-    return 1;
-	}
+    if (s[0] == '\0') return 0; // Không coi chu?i r?ng là ch? toàn kho?ng tr?ng
+    for (int i = 0; s[i]; i++) {
+        if (!isspace((unsigned char)s[i])) {
+            return 0;
+        }
+    }
+    return 1; // Ch? tr? v? 1 khi dã ki?m tra h?t và m?i th? d?u là kho?ng tr?ng
 }
 
 int only_digits(const char *s) {
     if (s[0] == '\0') {
     	return 0;	
 	}
-    for (size_t i = 0; s[i]; i++){
+    for (size_t i = 0; s[i]; i++) {
     	if (!isdigit((unsigned char)s[i])){
 			 return 0;
 		}
-    return 1;
-	}	
+    }
+    return 1; // Tr? v? 1 khi dã ki?m tra h?t và t?t c? là ch? s?
 }
 
 int only_letters_spaces(const char *s) {
@@ -61,17 +64,17 @@ int only_letters_spaces(const char *s) {
     	if (!isalpha((unsigned char)s[i]) && !isspace((unsigned char)s[i])){
     		return 0;
 		}
-    	return 1;
 	}
+    return 1; // Tr? v? 1 khi dã ki?m tra h?t và t?t c? ch? là ch? cái ho?c kho?ng tr?ng
 }
 
 int find_account_by_id(struct Account arr[], int n, const char *id) {
-    for (int i = 0; i < n; ++i){
-    		if (strcmp(arr[i].accountId, id) == 0){
+    for (int i = 0; i < n; ++i) {
+    	if (strcmp(arr[i].accountId, id) == 0) {
 			return i;	
-			}
-    	return -1;
+		}
 	}
+    return -1; // Ch? tr? v? -1 sau khi ki?m tra toàn b? m?ng
 }
 
 void now_str(char *out, size_t n) {
