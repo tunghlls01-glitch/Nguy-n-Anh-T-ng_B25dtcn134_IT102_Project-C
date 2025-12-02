@@ -25,7 +25,7 @@ struct Transaction {
 };
 
 
-int read_line(char *buf, size_t n) {
+int read_line(char *buf, size_t n) { // stdin, bo ki tu '\n' 
     if (!fgets(buf, (int)n, stdin)){
         return 0;
     }
@@ -33,7 +33,7 @@ int read_line(char *buf, size_t n) {
     return 1;
 }
 
-int is_only_spaces(const char *s) {
+int is_only_spaces(const char *s) { //khoang trang
     if (s[0] == '\0') return 0;
     for (int i = 0; s[i]; i++) {
         if (!isspace((unsigned char)s[i])) {
@@ -43,7 +43,7 @@ int is_only_spaces(const char *s) {
     return 1;
 }
 
-int only_digits(const char *s) {
+int only_digits(const char *s) { //chu so 
     if (s[0] == '\0') {
     	return 0;
 	}
@@ -55,7 +55,7 @@ int only_digits(const char *s) {
     return 1;
 }
 
-int only_letters_spaces(const char *s) {
+int only_letters_spaces(const char *s) { // chu cai va khoang trang
     if (s[0] == '\0') {
     	return 0;
 	}
@@ -67,7 +67,7 @@ int only_letters_spaces(const char *s) {
     return 1;
 }
 
-int find_account_by_id(struct Account arr[], int n, const char *id) {
+int find_account_by_id(struct Account arr[], int n, const char *id) { //tim kiem id
     for (int i = 0; i < n; ++i) {
     	if (strcmp(arr[i].accountId, id) == 0) {
 			return i;
@@ -76,7 +76,7 @@ int find_account_by_id(struct Account arr[], int n, const char *id) {
     return -1;
 }
 
-void now_str(char *out, size_t n) {
+void now_str(char *out, size_t n) { // lay thoi gian
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     snprintf(out, n, "%04d-%02d-%02d %02d:%02d:%02d",
@@ -98,16 +98,7 @@ void displayMenu (){ // ham hien thi menu
     printf("||====================================||\n");
 }
 
-void clear_stdin_line(void) { //ham doc va xoa ky tu '\n' con sot lai tu sanf
-    int c;
-    while((c = getchar()) != '\n' && c != EOF) {
-	}
-}
-
-// ==========================================================
-// HAM MOI: XOA KHOANG TRANG O DAU VA CUOI CHUOI
-// ==========================================================
-void trim_whitespace(char *s) {
+void trim_whitespace(char *s) { //xoa bo khoang trang dau cuoi
     if (s == NULL) return;
 
     // 1. Xoa khoang trang o cuoi chuoi
@@ -132,7 +123,6 @@ void trim_whitespace(char *s) {
         s[j] = '\0';
     }
 }
-// ==========================================================
 
 int prompt_alnum_unique(const char *prompt, char *out, size_t n, struct Account accounts[], int used) { // ham vong lap dung cho ID va ma tai khoan,f01
     char tmp[64];
@@ -168,17 +158,13 @@ int prompt_alnum_unique(const char *prompt, char *out, size_t n, struct Account 
     }
 }
 
-// ==========================================================
-// HAM DA CAP NHAT: TU DONG TRIM TRUOC KHI XAC THUC
-// ==========================================================
-int prompt_nonempty_name(const char *prompt, char *out, size_t n) {
+int prompt_nonempty_name(const char *prompt, char *out, size_t n) { //chu cai & khoang trang
     char tmp[128];
     while (1) {
         printf("%s", prompt); // "Nhap ten (FullName): "
         if (!read_line(tmp, sizeof(tmp))) return 0;
-        
-        // Them: Xoa khoang trang o dau/cuoi tren ban sao tam thoi (hoac ngay tren tmp)
-        trim_whitespace(tmp); // <--- DUNG HAM MOI
+
+        trim_whitespace(tmp); 
         
         if (strlen(tmp) == 0) {
             printf("Ten khong duoc de trong (sau khi xoa khoang trang)! Hay nhap lai.\n");
@@ -201,8 +187,6 @@ int prompt_nonempty_name(const char *prompt, char *out, size_t n) {
         strncpy(out, tmp, n-1); out[n-1] = '\0'; return 1;
     }
 }
-// ==========================================================
-
 
 int prompt_unique_phone(const char *prompt, char *out, size_t n, struct Account accounts[], int used) {
     char tmp[64];
@@ -272,7 +256,7 @@ int prompt_positive_double_original(const char *prompt, double *out) {
     }
 }
 
-void f01_addAccount(struct Account accounts[], int *size) {
+void f01_addAccount(struct Account accounts[], int *size) { //them tai khoan 
     int addCount;
     char input[50];
 
@@ -317,7 +301,7 @@ void f01_addAccount(struct Account accounts[], int *size) {
             else break;
         }
 
-        // Ten (prompt_nonempty_name da tu dong trim)
+        // Ten 
         while (1) {
             if (prompt_nonempty_name("Nhap ten (FullName): ", accounts[idx].fullName, sizeof(accounts[idx].fullName))) break;
         }
@@ -335,10 +319,7 @@ void f01_addAccount(struct Account accounts[], int *size) {
     printf("Them tai khoan thanh cong! Tong so hien tai: %d\n", *size);
 }
 
-// ==========================================================
-// HAM DA CAP NHAT: THEM G?I HAM TRIM
-// ==========================================================
-void f02_updateAccount(struct Account accounts[], int size) {
+void f02_updateAccount(struct Account accounts[], int size) { // cap nhat
     if (size == 0) {
 		printf("Chua co tai khoan nao trong he thong!\n");
 		return;
@@ -431,17 +412,26 @@ void menu_f03(){ //ham hien thi menu case 3
     printf("||===============================||\n");
 }
 
-void f03_lockOrUnlock(struct Account accounts[], int size) {
+void f03_lockOrUnlock(struct Account accounts[], int size) { //quan ly trang thai
     if (size == 0) { printf("Chua co tai khoan nao!\n"); return; }
     char id[20], confirm[8];
     int found = -1;
 
     while (1) {
         printf("Nhap ID tai khoan can khoa/mo: ");
-        if (!read_line(id, sizeof(id))) { printf("Loi khi doc ID.\n"); return; }
-        if (strlen(id) == 0) { printf("ID khong duoc de trong. Vui long nhap lai!\n"); continue; }
+        if (!read_line(id, sizeof(id))) { 
+			printf("Loi khi doc ID.\n"); 
+			return; 
+		}
+        if (strlen(id) == 0) { 
+			printf("ID khong duoc de trong. Vui long nhap lai!\n"); 
+			continue; 
+		}
         found = find_account_by_id(accounts, size, id);
-        if (found == -1) { printf("Khong tim thay tai khoan co ID '%s'. Vui long nhap lai!\n", id); continue; }
+        if (found == -1) { 
+			printf("Khong tim thay tai khoan co ID '%s'. Vui long nhap lai!\n", id); 
+			continue; 
+		}
         break;
     }
 
@@ -457,17 +447,26 @@ void f03_lockOrUnlock(struct Account accounts[], int size) {
            accounts[found].status == 1 ? "mo" : "khoa");
 }
 
-void f03_deleteAccount(struct Account accounts[], int *size) {
+void f03_deleteAccount(struct Account accounts[], int *size) { //xoa tai khoan
     if (*size == 0) { printf("Chua co tai khoan nao!\n"); return; }
     char id[20], confirm[8];
     int found = -1;
 
     while (1) {
         printf("Nhap ID tai khoan can xoa: ");
-        if (!read_line(id, sizeof(id))) { printf("Loi khi doc ID.\n"); return; }
-        if (strlen(id) == 0) { printf("ID khong duoc de trong. Vui long nhap lai!\n"); continue; }
+        if (!read_line(id, sizeof(id))) { 
+			printf("Loi khi doc ID.\n"); 
+			return; 
+		}
+        if (strlen(id) == 0) { 
+			printf("ID khong duoc de trong. Vui long nhap lai!\n"); 
+			continue; 
+		}
         found = find_account_by_id(accounts, *size, id);
-        if (found == -1) { printf("Khong tim thay tai khoan co ID '%s'. Vui long nhap lai!\n", id); continue; }
+        if (found == -1) { 
+			printf("Khong tim thay tai khoan co ID '%s'. Vui long nhap lai!\n", id); 
+			continue; 
+		}
         break;
     }
 
@@ -499,7 +498,7 @@ void f03_deleteAccount(struct Account accounts[], int *size) {
     printf(">> Da xoa tai khoan '%s' thanh cong! Tong so hien tai: %d\n", id, *size);
 }
 
-void f04_searchAccount(struct Account accounts[], int size) {
+void f04_searchAccount(struct Account accounts[], int size) {//tim kiem bang ten va id
     if (size == 0) {
 		printf("Chua co tai khoan nao trong he thong!\n");
 		return;
@@ -562,7 +561,7 @@ void f04_searchAccount(struct Account accounts[], int size) {
     else printf(">> Khong tim thay ket qua nao phu hop.\n");
 }
 
-void f05_listAccounts(struct Account accounts[], int size) {
+void f05_listAccounts(struct Account accounts[], int size) { //phan trang
     if (size == 0) {
 		printf("Chua co tai khoan nao trong he thong!\n");
 		return;
@@ -650,7 +649,7 @@ void f05_listAccounts(struct Account accounts[], int size) {
     }
 }
 
-void f06_sortAccounts(struct Account accounts[], int size) {
+void f06_sortAccounts(struct Account accounts[], int size) { //sap xep
     if (size == 0) { printf("Chua co tai khoan nao trong he thong!\n"); return; }
     char input[20];
     long choice;
@@ -689,7 +688,7 @@ void f06_sortAccounts(struct Account accounts[], int size) {
 		printf("Da sap xep theo TEN (A -> Z)!\n");
 }
 
-void f07_transfer(struct Account accounts[], int size, struct Transaction transactions[], int *transCount) {
+void f07_transfer(struct Account accounts[], int size, struct Transaction transactions[], int *transCount) { // giao dich chuyen khoan
     if (size == 0) {
 		printf("Chua co tai khoan nao trong he thong!\n");
 		return;
@@ -755,7 +754,7 @@ void f07_transfer(struct Account accounts[], int size, struct Transaction transa
     printf("\n|--- XAC NHAN CHUYEN KHOAN ---|\n");
     printf("Nguoi gui : %s (ID: %s)\n", accounts[senderIdx].fullName, accounts[senderIdx].accountId);
     printf("Nguoi nhan: %s (ID: %s)\n", accounts[receiverIdx].fullName, accounts[receiverIdx].accountId);
-    printf("So tien    : %.2f VNÐ\n", amount);
+    printf("So tien    : %.2f VND\n", amount);
     printf("|-----------------------------|\n");
 
     printf("Ban co chac chan muon chuyen khoan khong? (Y/N): ");
@@ -787,7 +786,7 @@ void f07_transfer(struct Account accounts[], int size, struct Transaction transa
     printf("So du moi cua nguoi gui: %.2f\n", accounts[senderIdx].balance);
 }
 
-void f08_showTransactions(struct Transaction transactions[], int transCount, struct Account accounts[], int accSize) {
+void f08_showTransactions(struct Transaction transactions[], int transCount, struct Account accounts[], int accSize) { //lich su giao dich
     if (accSize == 0) {
 		printf("Chua co tai khoan nao trong he thong!\n");
 		return;
